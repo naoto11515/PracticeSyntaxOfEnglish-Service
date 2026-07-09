@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Practice Syntax of English Service</title>
+  <link rel="stylesheet" href="/static/style.css?v=2">
+  <script src="/static/result.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Practice Syntax of English Service</h1>
+        </div>
+        <div class="content">
+            <p>Result page: <span id="ResultText"></span></p>
+            <p id="true_count">True count: {{ true_count }}</p>
+            <p id="false_count">False count: {{ false_count }}</p>
+            <p id="true_rate">True rate: {{ true_rate }}%</p>
+            <p id="false_syntax_id_list">False syntax list: {{ false_syntax_id_list }}</p>
+
+            <section class="wrong-answers">
+                <h2>間違えた問題</h2>
+
+                {% for item in wrong_answers %}
+                    <article class="wrong-answer-card">
+                    <h3>問題 {{ item.row_num }}</h3>
+
+                    <p><strong>構文ID:</strong></p>
+                    <p>{{ item.syntax_id }}</p>
+
+                    <p><strong>構文:</strong></p>
+                    <p>{{ item.syntax }}</p>
+
+                    <p><strong>日本語:</strong></p>
+                    <p>{{ item.japanese_sentence }}</p>
+
+                    <p><strong>あなたの回答:</strong></p>
+                    <p>{{ item.answer }}</p>
+
+                    <p><strong>正解例:</strong></p>
+                    <p>{{ item.correct_answer }}</p>
+
+                    <p><strong>解説:</strong></p>
+                    <p>{{ item.explanation }}</p>
+                    </article>
+                {% endfor %}
+            </section>
+            <div class="result-actions">
+                <button onclick="location.href='/start'">
+                    back to start
+                </button>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

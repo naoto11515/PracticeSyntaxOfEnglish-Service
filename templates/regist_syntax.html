@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Practice Syntax of English Service</title>
+  <link rel="stylesheet" href="/static/style.css?v=3">
+  <script src="/static/regist_syntax.js?v=3" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Practice Syntax of English Service</h1>
+        </div>
+        <div class="content">
+            <div class="regist-form">
+                <h3>Regist syntax</h3>
+                <p>syntax ID: <input id="syntaxId" type="text" placeholder="シンタックスIDを入力" disabled></p>
+                <p>Automatic numbering <input id="automaticNumbering", type="checkbox" checked></p>
+                <p>syntax: <input id="syntax" type="text" placeholder="シンタックスを入力"></p>
+                <p>meaning: <input id="meaning" type="text" placeholder="意味を入力"></p>
+
+            </div>
+            <button id="registButton">
+                regist
+            </button>
+            <button onclick="location.href='/start'">
+                back to start
+            </button>
+        </div>
+        <div id="modal">
+            <div id="modal-content">
+                <p id="syntaxId-display"></p>
+                <p id="syntax-display"></p>
+                <p id="meaning-display"></p>
+                <p id="condition-message"></p>
+                <button id="next-button" onclick="location.href='/start'">START画面へ</button>
+                <button id="continue-button" onclick="location.href='/regist_syntax'">続けて登録</button>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Practice Syntax of English Service</title>
+  <link rel="stylesheet" href="/static/style.css?v=2">
+  <script src="/static/question.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Practice Syntax of English Service</h1>
+        </div>
+        <div class="content">
+            <p>Question page: <span id="questionText"></span></p>
+            <p id="sessionIdText">Session ID: {{ sessionId }}</p>
+            <p id="startIdText">Start ID: {{ startId }}</p>
+            <p id="rowNumberText">Row number: {{ rowNumber }}</p>
+
+            <input type="hidden" id="sessionId" value="{{ sessionId }}">
+            <input type="hidden" id="startId" value="{{ startId }}">
+            <input type="hidden" id="rowNumber" value="{{ rowNumber }}">
+            <p id="numberquestions">Number of questions: {{ numberquestions }}</p>
+            <p id="levelCategory">Level category: {{ levelCategory }}</p>
+            <p id="level">Level: {{ level }}</p>
+            <p id="japaneseSentence">Japanese sentence: {{ japaneseSentence }}</p>
+            <p>answer: <input type="text" id="answerInput" /></p>
+            <button id="answerButton">
+                Answer
+            </button>
+        </div>
+        <div id="modal">
+            <div id="modal-content">
+                <p id="result-message"></p>
+                <p id="correct-answer"></p>
+                <p id="explanation-message"></p>
+                <button id="next-button" onclick="goToNext()">次へ進む</button>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

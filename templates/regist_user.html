@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Practice Syntax of English Service</title>
+  <link rel="stylesheet" href="/static/style.css?v=2">
+  <script src="/static/regist_user.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Practice Syntax of English Service</h1>
+        </div>
+        <div class="content">
+            <div class="regist-form">
+                <h3>Regist user</h3>
+                <p>user name: <input id="username" type="text" placeholder="ユーザー名を入力"></p>
+                <p>password: <input id="password" type="password" placeholder="パスワードを入力"></p>
+                <pass>confirm password: <input id="confirmPassword" type="password" placeholder="パスワードを再入力"></p>
+            </div>
+            <button id="registButton">
+                regist
+            </button>
+            <button onclick="location.href='/'">
+                back to login
+            </button>
+        </div>
+        <div id="modal">
+            <div id="modal-content">
+                <p id="user-name"></p>
+                <p id="condition-message"></p>
+                <button id="next-button" onclick="location.href='/'">back to Login</button>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
