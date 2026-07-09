@@ -16,6 +16,9 @@ const explanationMessage = document.getElementById("explanation-message");
 const nextButton = document.getElementById("next-button");
 
 answerButton.addEventListener("click", async () => {
+  
+  document.body.setAttribute('inert', 'true');
+  
   const formData = new FormData();
   formData.append("sessionId", sessionId.value);
   formData.append("startId", startId.value);
@@ -43,6 +46,8 @@ answerButton.addEventListener("click", async () => {
 
   // Show the modal
   modal.style.display = "block";
+
+  document.body.removeAttribute('inert');
 });
 
 function goToNext() {

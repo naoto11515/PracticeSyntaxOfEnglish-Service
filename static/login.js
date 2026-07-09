@@ -4,6 +4,9 @@ const password = document.getElementById("password");
 const loginButton = document.getElementById("loginButton");
 
 loginButton.addEventListener("click", async () => {
+
+  document.body.setAttribute('inert', 'true');
+
   const formData = new FormData();
   formData.append("username", username.value);
   formData.append("password", password.value);
@@ -19,4 +22,6 @@ loginButton.addEventListener("click", async () => {
   } else {
       window.location.href = result.next;
   }
+
+  document.body.removeAttribute('inert');
 });

@@ -55,6 +55,9 @@ levelCategorySelect.addEventListener("change", () => {
 });
 
 startButton.addEventListener("click", async () => {
+
+  document.body.setAttribute('inert', 'true');
+
   const formData = new FormData();
   formData.append("numberquestions", numberquestions.value);
   formData.append("levelCategory", levelCategorySelect.value);
@@ -72,4 +75,6 @@ startButton.addEventListener("click", async () => {
   } else {
       window.location.href = result.next;
   }
+
+  document.body.removeAttribute('inert');
 });

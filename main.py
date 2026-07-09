@@ -695,7 +695,7 @@ def call_gemini_api(prompt: str, response_schema: BaseModel):
     with genai.Client(api_key=api_key) as client:
         response_api = call_gemini_with_retry(
             client,
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",

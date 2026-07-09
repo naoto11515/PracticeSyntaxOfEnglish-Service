@@ -20,6 +20,9 @@ automaticNumbering.addEventListener("change", function(){
 });
 
 registButton.addEventListener("click", async () => {
+
+  document.body.setAttribute('inert', 'true');
+
   const formData = new FormData();
   formData.append("syntaxId", syntaxId.value || "");
   const isChecked = automaticNumbering.checked ? "true" : "false";
@@ -44,4 +47,6 @@ registButton.addEventListener("click", async () => {
 
       modal.style.display = "block";
   }
+
+  document.body.removeAttribute('inert');
 });

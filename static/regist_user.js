@@ -7,6 +7,9 @@ const userNameDisplay = document.getElementById("user-name");
 const conditionMessage = document.getElementById("condition-message");
 
 registButton.addEventListener("click", async () => {
+
+  document.body.setAttribute('inert', 'true');
+
   const formData = new FormData();
   formData.append("username", username.value);
   formData.append("password", password.value);
@@ -26,4 +29,6 @@ registButton.addEventListener("click", async () => {
 
       modal.style.display = "block";
   }
+
+  document.body.removeAttribute('inert');
 });
