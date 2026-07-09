@@ -14,26 +14,37 @@
         <div class="content">
             <div class="settings">
                 <h3>settings</h3>
-                <p>Number of questions: <input id="numberquestions" type="number" placeholder="数字を入力"></p>
-                <p>Level category: <select id="levelCategorySelect">
-                    <option value="0">-- カテゴリを選択してください --</option>
-                    <option value="1">CEFR</option>
-                    <option value="2">IELTS</option>
-                    <option value="3">TOEIC</option>
-                </select></p>
-                <p>Level: <select id="levelSelect">
-                    <option value="0">-- レベルを選択してください --</option>
-                </select></p>
+                <div class="form-group">
+                    <label for="numberquestions">Number of questions</label>
+                    <input id="numberquestions" type="number" placeholder="数字を入力">
+                </div>
+                <div class="form-group">
+                    <label for="levelCategorySelect">Level category</label>
+                    <select id="levelCategorySelect">
+                        <option value="0">-- カテゴリを選択してください --</option>
+                        <option value="1">CEFR</option>
+                        <option value="2">IELTS</option>
+                        <option value="3">TOEIC</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="levelSelect">Level</label>
+                    <select id="levelSelect">
+                        <option value="0">-- レベルを選択してください --</option>
+                    </select>
+                </div>
             </div>
-            <button id="startButton">
-                Start
-            </button>
-            <button onclick="location.href='/regist_syntax'">
-                Regist Syntax
-            </button>
-            <button onclick="location.href='/'">
-                log out
-            </button>
+            <div class="button-area">
+                <button id="startButton">
+                    Start
+                </button>
+                <button onclick="location.href='/regist_syntax'">
+                    Regist Syntax
+                </button>
+                <button onclick="location.href='/'">
+                    log out
+                </button>
+            </div>
         </div>
         <div class="footer">
             <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>

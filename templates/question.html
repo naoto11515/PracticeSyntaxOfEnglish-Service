@@ -12,7 +12,7 @@
             <h1>Practice Syntax of English Service</h1>
         </div>
         <div class="content">
-            <p>Question page: <span id="questionText"></span></p>
+            <h3>Question page</h3>
             <p id="sessionIdText">Session ID: {{ sessionId }}</p>
             <p id="startIdText">Start ID: {{ startId }}</p>
             <p id="rowNumberText">Row number: {{ rowNumber }}</p>
@@ -24,17 +24,24 @@
             <p id="levelCategory">Level category: {{ levelCategory }}</p>
             <p id="level">Level: {{ level }}</p>
             <p id="japaneseSentence">Japanese sentence: {{ japaneseSentence }}</p>
-            <p>answer: <input type="text" id="answerInput" /></p>
-            <button id="answerButton">
-                Answer
-            </button>
+            <div class="form-group">
+                <label for="answerInput">answer</label>
+                <input type="text" id="answerInput" /></p>
+            </div>
+            <div class="button-area">
+                <button id="answerButton">
+                    Answer
+                </button>
+            </div>
         </div>
         <div id="modal">
             <div id="modal-content">
                 <p id="result-message"></p>
                 <p id="correct-answer"></p>
                 <p id="explanation-message"></p>
-                <button id="next-button" onclick="goToNext()">次へ進む</button>
+                <div class="button-area">
+                    <button id="next-button" onclick="goToNext()">次へ進む</button>
+                </div>
             </div>
         </div>
         <div class="footer">

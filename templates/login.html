@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Practice Syntax of English Service</title>
-  <link rel="stylesheet" href="/static/style.css?v=2">
+  <link rel="stylesheet" href="/static/style.css?v=3">
   <script src="/static/login.js" defer></script>
 </head>
 <body>
@@ -14,15 +14,23 @@
         <div class="content">
             <div class="login-form">
                 <h3>Sign In</h3>
-                <p>user name: <input id="username" type="text" placeholder="ユーザー名を入力"></p>
-                <p>password: <input id="password" type="password" placeholder="パスワードを入力"></p>
+                <div class="form-group">
+                    <label for="username">user name</label>
+                    <input id="username" type="text" placeholder="ユーザー名を入力">
+                </div>
+                <div class="form-group">
+                    <label for="password">password</label>
+                    <input id="password" type="password" placeholder="パスワードを入力">
+                </div>
             </div>
-            <button id="loginButton">
-                Sign In
-            </button>
-            <button onclick="location.href='/regist_user'">
-                Sign Up
-            </button>
+            <div class="button-area">
+                <button id="loginButton">
+                    Sign In
+                </button>
+                <button onclick="location.href='/regist_user'">
+                    Sign Up
+                </button>
+            </div>
         </div>
         <div class="footer">
             <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>
