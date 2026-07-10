@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Practice Syntax of English Service</title>
+  <link rel="stylesheet" href="/static/style.css?v=3">
+  <script src="/static/regist_syntax.js?v=3" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Practice Syntax of English Service</h1>
+        </div>
+        <div class="content">
+            <div class="list-form">
+                <h3>List syntax</h3>
+                <div class="table-wrap">
+                    <table class="syntax-table">
+                        <thead>
+                            <tr>
+                                <th>no</th>
+                                <th>syntax_id</th>
+                                <th>syntax</th>
+                                <th>meaning</th>
+                                <th>studied_date</th>
+                                <th>study_number</th>
+                                <th>true_number</th>
+                                <th>false_number</th>
+                                <th>true_rate</th>
+                                <th>review_interval</th>
+                                <th>next_review_date</th>
+                                <th>action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in syntax_master_data %}
+                                <tr>
+                                    <td>{{item.no}}</td>
+                                    <td>{{item.syntax_id}}</td>
+                                    <td>{{item.syntax}}</td>
+                                    <td>{{item.meaning}}</td>
+                                    <td>{{item.studied_date}}</td>
+                                    <td>{{item.study_number}}</td>
+                                    <td>{{item.true_number}}</td>
+                                    <td>{{item.false_number}}</td>
+                                    <td>{{item.true_rate}}</td>
+                                    <td>{{item.review_interval}}</td>
+                                    <td>{{item.next_review_date}}</td>
+                                    <td>
+                                        <a href="/edit_syntax?mode=update&syntaxId={{ item.syntax_id }}">編集</a>
+                                        <a href="/edit_syntax?mode=delete&syntaxId={{ item.syntax_id }}">削除</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="button-area">
+                <button onclick="location.href='/start'">
+                    back to start
+                </button>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

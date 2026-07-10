@@ -57,6 +57,7 @@ body {
 
 .button-area {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
     margin-top: 20px;
@@ -64,6 +65,50 @@ body {
 
 .button-area button {
     width: auto;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.syntax-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.syntax-table th,
+.syntax-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.syntax-table th {
+  background: #f1f5f9;
+  font-weight: bold;
+}
+
+.syntax-table tr:hover {
+  background: #f8fafc;
+}
+
+.action-links {
+  display: flex;
+  gap: 8px;
+}
+
+.action-links a {
+  color: #2563eb;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.action-links a:hover {
+  text-decoration: underline;
 }
 
 .settings {
@@ -240,5 +285,14 @@ button:hover {
 
   button {
     width: 100%;
+  }
+
+  .syntax-table {
+    font-size: 12px;
+  }
+
+  .syntax-table th,
+  .syntax-table td {
+    padding: 8px;
   }
 }

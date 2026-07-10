@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Practice Syntax of English Service</title>
+  <link rel="stylesheet" href="/static/style.css?v=3">
+  <script src="/static/edit_syntax.js?v=9" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Practice Syntax of English Service</h1>
+        </div>
+        <div class="content">
+            <div class="regist-form">
+                <h3>Edit syntax</h3>
+                <div class="form-group">
+                    <label for="mode">Transaction type</label>
+                    <input id="mode" type="text" value="{{ mode }}" readonly></input>
+                </div>
+                </div>
+                <div class="form-group">
+                    <label for="syntaxId">syntax ID</label>
+                    <input id="syntaxId" type="text" value="{{ syntax_id }}" placeholder="シンタックスIDを入力" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="automaticNumbering">Automatic numbering</label>
+                    <input id="automaticNumbering", type="checkbox" checked>
+                </div>
+                <div class="form-group">
+                    <label for="syntax">syntax</label>
+                    <input id="syntax" type="text" value="{{ syntax }}" placeholder="シンタックスを入力">
+                </div>
+                <div class="form-group">
+                    <label for="meaning">meaning</label>
+                    <input id="meaning" type="text" value="{{ meaning }}" placeholder="意味を入力">
+                </div>
+                <div class="button-area">
+                    <button id="submitButton">
+                        submit
+                    </button>
+
+                    {% if mode == "create" %}
+                        <button onclick="location.href='/start'">back to start</button>
+                    {% else %}
+                        <button onclick="location.href='/list_syntax'">back to list</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div id="modal">
+            <div id="modal-content">
+                <p id="syntaxId-display"></p>
+                <p id="syntax-display"></p>
+                <p id="meaning-display"></p>
+                <p id="condition-message"></p>
+                <div class="button-area">
+                    {% if mode == "create" %}
+                        <button id="next-button" onclick="location.href='/start'">START画面へ</button>
+                        <button id="continue-button" onclick="location.href='/edit_syntax'">続けて登録</button>
+                    {% else %}
+                        <button id="next-button" onclick="location.href='/list_syntax'">List画面へ</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

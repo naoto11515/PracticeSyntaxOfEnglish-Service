@@ -1,9 +1,10 @@
 // login button click event handler
+const mode = document.getElementById("mode");
 const syntaxId = document.getElementById("syntaxId");
 const automaticNumbering = document.getElementById("automaticNumbering");
 const syntax = document.getElementById("syntax");
 const meaning = document.getElementById("meaning");
-const registButton = document.getElementById("registButton");
+const submitButton = document.getElementById("submitButton");
 
 const modal = document.getElementById("modal");
 const syntaxIdDisplay = document.getElementById("syntaxId-display");
@@ -19,7 +20,7 @@ automaticNumbering.addEventListener("change", function(){
   }
 });
 
-registButton.addEventListener("click", async () => {
+submitButton.addEventListener("click", async () => {
 
   document.body.setAttribute('inert', 'true');
 
@@ -29,8 +30,16 @@ registButton.addEventListener("click", async () => {
   formData.append("automaticNumbering", isChecked);
   formData.append("syntax", syntax.value);
   formData.append("meaning", meaning.value);
+
+  if (mode.value == "create"){
+    post_name = "/create_syntax"
+  } else if (mode.value == "update") {
+    post_name = "/update_syntax"
+  } else {
+    post_name = "/delete_syntax"
+  }
   
-  const response = await fetch("regist_syntax", {
+  const response = await fetch(post_name, {
     method: "POST",
     body: formData
   });

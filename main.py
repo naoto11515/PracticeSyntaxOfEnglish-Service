@@ -1,6 +1,6 @@
 from datetime import datetime
 import bcrypt
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Query
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -62,28 +62,56 @@ def login(request: Request):
         context={}
     )
 
-@app.get("/regist_user", response_class=HTMLResponse)
-def regist_user(request: Request):
+@app.get("/edit_user", response_class=HTMLResponse)
+def edit_user(
+    request: Request,
+    mode: str = Query("create")
+):
+    
+    if mode in ["update","delete"]:
+
+        sessionId = request.cookies.get("session_id")
+        userId = get_session_data(sessionId).user_id
+
+        conn = db_connect()
+
+        try:
+            with conn:
+                cursor = conn.cursor()
+            
+                cursor.execute(
+                    "select user_name from M_User "
+                    "where user_id = %s and delete_flg = 0 ",
+                    (userId,)
+                )
+                user_data = cursor.fetchone()
+        finally:
+            conn.close()
+
     return templates.TemplateResponse(
         request=request,
-        name="regist_user.html",
-        context={}
+        name="edit_user.html",
+        context={
+            "mode": mode,
+            "userName": user_data[0] if mode in ["update","delete"] else ""
+        }
     )
 
-@app.post("/regist_user")
-def regist_user(request: Request,
-             username: str = Form(...),
+@app.post("/create_user")
+def create_user(request: Request,
+             userName: str = Form(...),
              password: str = Form(...)):
     
-    connn = db_connect()
+    conn = db_connect()
 
     try:
-        with connn:
-            cursor = connn.cursor()
+        with conn:
+            cursor = conn.cursor()
         
             cursor.execute(
-                "select * from M_User where user_name = %s",
-                (username,)
+                "select * from M_User "
+                "where user_name = %s and delete_flg = 0",
+                (userName,)
             )
             user_data = cursor.fetchone()
 
@@ -97,13 +125,49 @@ def regist_user(request: Request,
 
             cursor.execute(
                 "Insert into M_User "
-                "(user_name, hashed_password, update_date,create_date) "
+                "(user_name, hashed_password, delete_flg, update_date,create_date) "
                 "values "
-                "(%s, %s, %s, %s)",
-                (username, 
-                 hashed_password, 
+                "(%s, %s, %s, %s, %s)",
+                (userName, 
+                 hashed_password,
+                 0,
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            )
+    finally:
+        conn.close()
+
+    response = JSONResponse(
+        { "success": True,
+         "next": "/",
+         "usernamedisplay": userName,
+            "condition_message": "登録が完了しました。ログイン画面に戻ります。"
+        })
+
+    return response
+
+@app.post("/update_user")
+def update_user(request: Request,
+             userName: str = Form(...),
+             password: str = Form(...)):
+    
+    connn = db_connect()
+
+    sessionId = request.cookies.get("session_id")
+    userId = get_session_data(sessionId).user_id
+
+    try:
+        with connn:
+            cursor = connn.cursor()
+        
+            cursor.execute(
+                "Update M_User "
+                "set user_name = %s, hashed_password = %s, update_date = %s "
+                "where user_id = %s and delete_flg = 0",
+                (userName, 
+                 get_password_hash(password),
+                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 userId)
             )
     finally:
         connn.close()
@@ -111,22 +175,102 @@ def regist_user(request: Request,
     response = JSONResponse(
         { "success": True,
          "next": "/",
-         "usernamedisplay": username,
-            "condition_message": "登録が完了しました。ログインしてください。"
+         "usernamedisplay": userName,
+            "condition_message": "更新が完了しました。ログイン画面に戻ります。"
         })
 
     return response
 
-@app.get("/regist_syntax", response_class=HTMLResponse)
-def regist_syntax(request: Request):
+@app.post("/delete_user")
+def delete_user(request: Request,
+             userName: str = Form(...)):
+    
+    connn = db_connect()
+
+    sessionId = request.cookies.get("session_id")
+    userId = get_session_data(sessionId).user_id
+
+    try:    
+        with connn:
+            cursor = connn.cursor()
+        
+            cursor.execute(
+                "update M_User "
+                "set delete_flg = 1 "
+                "where user_id = %s ",
+                (userId,)
+            )
+    finally:
+        connn.close()
+
+    response = JSONResponse(
+        { "success": True,
+         "next": "/",
+         "usernamedisplay": userName,
+            "condition_message": "削除が完了しました。ログイン画面に戻ります。"
+        })
+
+    return response
+
+@app.get("/list_syntax", response_class=HTMLResponse)
+def list_syntax(request: Request):
+
+    sessionId = request.cookies.get("session_id")
+    userId = get_session_data(sessionId).user_id
+
+    syntax_master_data = get_syntax_master_data(userId)
+
     return templates.TemplateResponse(
         request=request,
-        name="regist_syntax.html",
-        context={}
+        name="list_syntax.html",
+        context={
+            "syntax_master_data": syntax_master_data
+        }
     )
 
-@app.post("/regist_syntax")
-def regist_syntax(request: Request,
+@app.get("/edit_syntax", response_class=HTMLResponse)
+def edit_syntax(
+        request: Request,
+        mode: str = Query("create"),
+        syntaxId: int | None = None
+):
+
+    syntax_data = None
+
+    if mode in ["update","delete"]:
+
+        sessionId = request.cookies.get("session_id")
+        userId = get_session_data(sessionId).user_id
+
+        conn = db_connect()
+
+        try:
+            with conn:
+                cursor = conn.cursor()
+            
+                cursor.execute(
+                    "select syntax_id, syntax, meaning from M_Syntax "
+                    "where user_id = %s and syntax_id =%s",
+                    (userId,
+                    syntaxId)
+                )
+                syntax_data = cursor.fetchone()
+        finally:
+            conn.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="edit_syntax.html",
+        context={
+            "mode": mode,
+            "syntax_id": syntax_data[0] if mode in ["update","delete"] else "",
+            "syntax": syntax_data[1] if mode in ["update","delete"] else "",
+            "meaning": syntax_data[2]if mode in ["update","delete"] else "",
+        }
+    )
+    
+@app.post("/create_syntax")
+def create_syntax(request: Request,
              syntaxId: Optional[str] = Form(default=""),
              automaticNumbering: bool = Form(...),
              syntax: str = Form(...),
@@ -145,7 +289,7 @@ def regist_syntax(request: Request,
             
                 cursor.execute(
                     "select * from M_Syntax "
-                    "where user_id = %s and Syntax_id = %s",
+                    "where user_id = %s and Syntax_id = %s and delete_flg = 0",
                     (userId,
                      syntaxId)
                 )
@@ -186,14 +330,14 @@ def regist_syntax(request: Request,
             cursor = conn.cursor()
             cursor.execute(
                 "Insert into M_Syntax "
-                "(user_id, syntax_id, syntax, meaning, studied_date, study_number, true_number, false_number, true_rate, review_interval, next_review_date, update_date, create_date) "
+                "(user_id, syntax_id, syntax, meaning, studied_date, study_number, true_number, false_number, true_rate, review_interval, next_review_date, delete_flg, update_date, create_date) "
                 "values "
-                "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 (userId, 
                 useSyntaxId, 
                 syntax,
                 meaning,
-                initial_yyyymmdd, 0, 0, 0, 0, 0, initial_yyyymmdd,
+                initial_yyyymmdd, 0, 0, 0, 0, 0, initial_yyyymmdd, 0,
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             )
@@ -211,6 +355,81 @@ def regist_syntax(request: Request,
 
     return response
 
+@app.post("/update_syntax")
+def update_syntax(request: Request,
+             syntaxId: Optional[str] = Form(default=""),
+             automaticNumbering: bool = Form(...),
+             syntax: str = Form(...),
+             meaning: str = Form(...)):
+
+    conn = db_connect()
+
+    sessionId = request.cookies.get("session_id")
+    userId = get_session_data(sessionId).user_id
+
+    try:
+        with conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "update M_Syntax "
+                "set syntax = %s, meaning  = %s, update_date = %s "
+                "where user_id = %s and syntax_id = %s",
+                (syntax,
+                meaning,
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                userId, 
+                syntaxId)
+            )
+    finally:
+        conn.close()
+
+    response = JSONResponse(
+        { "success": True,
+         "next": "/start",
+         "syntaxIdDisplay": syntaxId,
+         "syntaxDisplay": syntax,
+         "meaningDisplay": meaning,
+         "condition_message": "更新が完了しました。"
+        })
+    
+    return response
+
+@app.post("/delete_syntax")
+def delete_syntax(request: Request,
+             syntaxId: Optional[str] = Form(default=""),
+             automaticNumbering: bool = Form(...),
+             syntax: str = Form(...),
+             meaning: str = Form(...)):
+
+    conn = db_connect()
+
+    sessionId = request.cookies.get("session_id")
+    userId = get_session_data(sessionId).user_id
+
+    try:
+        with conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "update M_Syntax "
+                "set delete_flg = 1 "
+                "where user_id = %s and syntax_id = %s",
+                (userId, 
+                syntaxId)
+            )
+    finally:
+        conn.close()
+
+    response = JSONResponse(
+        { "success": True,
+         "next": "/start",
+         "syntaxIdDisplay": syntaxId,
+         "syntaxDisplay": syntax,
+         "meaningDisplay": meaning,
+         "condition_message": "削除が完了しました。"
+        })
+    
+    return response
+
 @app.post("/login")
 def login(request: Request,
           username: str = Form(...),
@@ -223,7 +442,8 @@ def login(request: Request,
             cursor = conn.cursor()
         
             cursor.execute(
-                "select * from M_User where user_name = %s",
+                "select * from M_User "
+                "where user_name = %s and delete_flg = 0",
                 (username,)
             )
             user_data = cursor.fetchone()
@@ -335,7 +555,7 @@ def start(request: Request,
         
             cursor.execute(
                 "select 1 from M_Syntax "
-                "where user_id = %s ",
+                "where user_id = %s and delete_flg= 0",
                 (sessionData.user_id,)
             )
             syntax_data = cursor.fetchall()
@@ -343,7 +563,7 @@ def start(request: Request,
             cursor.execute(
                 "select syntax_id, syntax, meaning "
                 "from M_Syntax "
-                "where user_id = %s and next_review_date < %s "
+                "where user_id = %s and next_review_date < %s and delete_flg = 0 "
                 "order by next_review_date, true_rate limit %s",
                 (sessionData.user_id,
                  datetime.now().strftime("%Y%m%d"),
@@ -752,6 +972,42 @@ def get_false_syntax_id_list(sessionId: str, sessionData: sessionData):
         false_syntax_id_list.append(row[0])
 
     return false_syntax_id_list
+
+def get_syntax_master_data(userId: str):
+    conn = db_connect()
+    try:
+        with conn:
+            cursor = conn.cursor()
+        
+            cursor.execute(
+                "select ROW_NUMBER() OVER (ORDER BY Syntax_id) AS row_num, "
+                "syntax_id, syntax, meaning, studied_date, study_number, true_number, false_number, true_rate, review_interval, next_review_date "
+                "from M_Syntax "
+                "where user_id = %s and delete_flg = 0 "
+                "order by Syntax_id",
+                (userId,)
+            )
+            syntax_data = cursor.fetchall()
+    finally:
+        conn.close()
+    
+    syntax_master_data = []
+    for row in syntax_data:
+        syntax_master_data.append({
+            "no": row[0],
+            "syntax_id": row[1],
+            "syntax": row[2],
+            "meaning": row[3],
+            "studied_date": row[4],
+            "study_number": row[5],
+            "true_number": row[6],
+            "false_number": row[7],
+            "true_rate": row[8],
+            "review_interval": row[9],
+            "next_review_date": row[10],
+        })
+
+    return syntax_master_data
 
 def get_wrong_answers(sessionId: str, sessionData: sessionData):
     conn = db_connect()
