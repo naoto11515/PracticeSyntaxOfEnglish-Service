@@ -114,14 +114,21 @@ def create_user(request: Request,
                 (userName,)
             )
             user_data = cursor.fetchone()
+    finally:
+        conn.close()
 
-            if user_data:
-                return JSONResponse(
-                    { "success": False,
-                     "message": "ユーザー名は既に使用されています"
-                    })
-            
-            hashed_password = get_password_hash(password)
+    if user_data:
+        return JSONResponse(
+            { "success": False,
+                "message": "ユーザー名は既に使用されています"
+            })
+
+    hashed_password = get_password_hash(password)
+
+    conn = db_connect()
+    try:
+        with conn:
+            cursor = conn.cursor()
 
             cursor.execute(
                 "Insert into M_User "
@@ -150,15 +157,34 @@ def create_user(request: Request,
 def update_user(request: Request,
              userName: str = Form(...),
              password: str = Form(...)):
-    
-    connn = db_connect()
 
     sessionId = request.cookies.get("session_id")
     userId = get_session_data(sessionId).user_id
 
+    conn = db_connect()
     try:
-        with connn:
-            cursor = connn.cursor()
+        with conn:
+            cursor = conn.cursor()
+        
+            cursor.execute(
+                "select * from M_User "
+                "where user_name = %s and delete_flg = 0",
+                (userName,)
+            )
+            user_data = cursor.fetchone()
+    finally:
+        conn.close()
+
+    if user_data:
+        return JSONResponse(
+            { "success": False,
+                "message": "ユーザー名は既に使用されています"
+            })
+
+    conn = db_connect()
+    try:
+        with conn:
+            cursor = conn.cursor()
         
             cursor.execute(
                 "Update M_User "
@@ -170,13 +196,13 @@ def update_user(request: Request,
                  userId)
             )
     finally:
-        connn.close()
+        conn.close()
 
     response = JSONResponse(
         { "success": True,
          "next": "/",
          "usernamedisplay": userName,
-            "condition_message": "更新が完了しました。ログイン画面に戻ります。"
+         "condition_message": "更新が完了しました。ログイン画面に戻ります。"
         })
 
     return response
@@ -185,14 +211,14 @@ def update_user(request: Request,
 def delete_user(request: Request,
              userName: str = Form(...)):
     
-    connn = db_connect()
+    conn = db_connect()
 
     sessionId = request.cookies.get("session_id")
     userId = get_session_data(sessionId).user_id
 
     try:    
-        with connn:
-            cursor = connn.cursor()
+        with conn:
+            cursor = conn.cursor()
         
             cursor.execute(
                 "update M_User "
@@ -201,7 +227,7 @@ def delete_user(request: Request,
                 (userId,)
             )
     finally:
-        connn.close()
+        conn.close()
 
     response = JSONResponse(
         { "success": True,
@@ -357,8 +383,7 @@ def create_syntax(request: Request,
 
 @app.post("/update_syntax")
 def update_syntax(request: Request,
-             syntaxId: Optional[str] = Form(default=""),
-             automaticNumbering: bool = Form(...),
+             syntaxId: str = Form(...),
              syntax: str = Form(...),
              meaning: str = Form(...)):
 
@@ -396,8 +421,7 @@ def update_syntax(request: Request,
 
 @app.post("/delete_syntax")
 def delete_syntax(request: Request,
-             syntaxId: Optional[str] = Form(default=""),
-             automaticNumbering: bool = Form(...),
+             syntaxId: str = Form(...),
              syntax: str = Form(...),
              meaning: str = Form(...)):
 
@@ -509,8 +533,8 @@ def start_page(request: Request):
 @app.post("/start")
 def start(request: Request,
           numberquestions: int = Form(...),
-          levelCategory: str = Form(...),
-          level: str = Form(...)):
+          levelCategorySelect: str = Form(...),
+          levelSelect: str = Form(...)):
     
     if numberquestions <= 0:
         return JSONResponse({
@@ -563,13 +587,23 @@ def start(request: Request,
             cursor.execute(
                 "select syntax_id, syntax, meaning "
                 "from M_Syntax "
-                "where user_id = %s and next_review_date < %s and delete_flg = 0 "
-                "order by next_review_date, true_rate limit %s",
+                "where user_id = %s and next_review_date <= %s and delete_flg = 0 "
+                "order by next_review_date, true_rate, syntax_id "
+                "limit %s",
                 (sessionData.user_id,
                  datetime.now().strftime("%Y%m%d"),
                  numberquestions)
             )
             target_syntax_data = cursor.fetchall()
+
+            cursor.execute(
+                "select count(1) "
+                "from M_Syntax "
+                "where user_id = %s and next_review_date <= %s and delete_flg = 0 ",
+                (sessionData.user_id,
+                 datetime.now().strftime("%Y%m%d"))
+            )
+            count_syntax_data = cursor.fetchone()
     finally:
         conn.close()
 
@@ -585,6 +619,12 @@ def start(request: Request,
             "message": "練習対象のシンタックスがありません。"
     })
 
+    if count_syntax_data[0] < numberquestions:
+        return JSONResponse({
+            "success": False,
+            "message": "練習対象のシンタックス数( " + str(count_syntax_data[0]) + " )が指定した問題数分ありません。新しいシンタックスを追加する、もしくは問題数を減らしてください。"
+    })
+
     conn = db_connect()
     try:
         with conn:
@@ -598,8 +638,8 @@ def start(request: Request,
                             start_id,
                             datetime.now().strftime("%Y%m%d"),
                             numberquestions,
-                            levelCategory,
-                            level,
+                            levelCategorySelect,
+                            levelSelect,
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
@@ -613,45 +653,45 @@ def start(request: Request,
     # 3. gemini APIを呼び出して質問を生成し、履歴データに書き出し
     rowNumber = 0
 
-    if levelCategory == "1":
+    if levelCategorySelect == "1":
         levelCategoryname = "CEFR"
 
-        if level == "1":
+        if levelSelect == "1":
             levelname = "A1"
-        elif level == "2":
+        elif levelSelect == "2":
             levelname = "A2"
-        elif level == "3":
+        elif levelSelect == "3":
             levelname = "B1"
-        elif level == "4":
+        elif levelSelect == "4":
             levelname = "B2"
-        elif level == "5":
+        elif levelSelect == "5":
             levelname = "C1"
         else:
             levelname = "C2"
 
-    elif levelCategory == "2":
+    elif levelCategorySelect == "2":
         levelCategoryname = "IELTS"
         
-        if level == "1":
+        if levelSelect == "1":
             levelname = "5.0"
-        elif level == "2":
+        elif levelSelect == "2":
             levelname = "6.0"
-        elif level == "3":
+        elif levelSelect == "3":
             levelname = "7.0"
-        elif level == "4":
+        elif levelSelect == "4":
             levelname = "8.0"
         else:
             levelname = "9.0"
     else:
         levelCategoryname = "TOEIC"
 
-        if level == "1":
+        if levelSelect == "1":
             levelname = "500"
-        elif level == "2":
+        elif levelSelect == "2":
             levelname = "600"
-        elif level == "3":
+        elif levelSelect == "3":
             levelname = "700"
-        elif level == "4":
+        elif levelSelect == "4":
             levelname = "800"
         else:
             levelname = "900"
@@ -664,7 +704,7 @@ def start(request: Request,
             for syntax in target_syntax_data:
 
                 response_api = call_gemini_api(
-                    prompt="Please generate a question in Japanese based on the following English syntax: " + syntax[1] + ", meaning: " + syntax[2] + " and also follow level category: " + levelCategoryname + " and level: " + levelname + " in terms of vocabulary and grammar. The response should be in JSON format with the following structure: {\"syntax_id\": \"<syntax_id>\", \"syntax\": \"<syntax>\", \"japanese_sentence\": \"<japanese_sentence>\"}.",
+                    prompt="Please generate a question in Japanese based on the following English syntax: " + syntax[1] + ", meaning: " + syntax[2] + " and also follow levelSelect category: " + levelCategoryname + " and level: " + levelname + " in terms of vocabulary and grammar. The response should be in JSON format with the following structure: {\"syntax_id\": \"<syntax_id>\", \"syntax\": \"<syntax>\", \"japanese_sentence\": \"<japanese_sentence>\"}.",
                     response_schema=QuestionData,  # Pydanticモデルを直接指定
                 )
                 
@@ -700,6 +740,7 @@ def question_page(request: Request):
 
     sessionId = request.cookies.get("session_id")
     current_start_id = get_session_data(sessionId).current_start_id
+    userId = get_session_data(sessionId).user_id
     startData = get_start_data(sessionId, current_start_id)
 
     conn = db_connect()
@@ -708,13 +749,23 @@ def question_page(request: Request):
             cursor = conn.cursor()
             
             cursor.execute(
-                "select japanese_sentence, row_num "
+                "select syntax_id, japanese_sentence, row_num "
                 "from T_History "
                 "where session_id = %s and answer is null "
                 "order by row_num limit 1",
                 (sessionId,)
             )
             question_data = cursor.fetchone()
+
+            cursor.execute(
+                "select syntax "
+                "from M_Syntax "
+                "where User_id = %s and Syntax_id = %s ",
+                (userId,
+                 question_data[0])
+            )
+            syntax_data = cursor.fetchone()
+
     finally:
         conn.close()
 
@@ -724,11 +775,12 @@ def question_page(request: Request):
         {
             "sessionId": sessionId,
             "startId": current_start_id,
-            "rowNumber": question_data[1],
+            "rowNumber": question_data[2],
             "numberquestions": startData.number_questions,
             "levelCategory": startData.level_category,
             "level": startData.level,
-            "japaneseSentence": question_data[0]
+            "japaneseSentence": question_data[1],
+            "syntax": syntax_data[0]
         }
     )
 
@@ -792,24 +844,24 @@ def answer(request: Request,
             )
 
             cursor.execute(
-                "update M_Syntax "
+                "update M_Syntax M1 "
                 "set studied_date = %s, "
                 "study_number = study_number + 1, "
-                "true_number = CASE WHEN T_History.result = 1 THEN true_number + 1 ELSE true_number END, "
-                "false_number = CASE WHEN T_History.result = 0 THEN false_number + 1 ELSE false_number END, "
+                "true_number = CASE WHEN T1.result = 1 THEN true_number + 1 ELSE true_number END, "
+                "false_number = CASE WHEN T1.result = 0 THEN false_number + 1 ELSE false_number END, "
                 "review_interval = CASE "
                 "                      WHEN review_interval = 0 THEN 1 "
                 "                      WHEN review_interval = 16 THEN review_interval "
                 "                      ELSE "
                 "                          CASE "
-                "                              WHEN T_History.result = 1 THEN review_interval * 2 "
+                "                              WHEN T1.result = 1 THEN review_interval * 2 "
                 "                              ELSE review_interval "
                 "                          END "
                 "                  END, "
                 "update_date = %s "
-                "from T_History "
-                "where T_History.session_id = %s and T_History.start_id = %s and T_History.row_num = %s "
-                "and M_Syntax.user_id = %s and T_History.syntax_id = M_Syntax.syntax_id",
+                "from T_History T1 "
+                "where T1.session_id = %s and T1.start_id = %s and T1.row_num = %s "
+                "and M1.user_id = %s and T1.syntax_id = M1.syntax_id",
                 (datetime.now().strftime("%Y%m%d"),
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  sessionId,
@@ -819,21 +871,31 @@ def answer(request: Request,
             )
 
             cursor.execute(
-                "update M_Syntax "
+                "update M_Syntax M1 "
                 "set true_rate = ROUND((CAST(true_number AS NUMERIC) / CAST(study_number AS NUMERIC)) * 100, 1), "
-                "next_review_date = to_char( "
-                "                       CASE "
-                "                           WHEN next_review_date = %s THEN %s::date "
-                "                           ELSE to_date(next_review_date, 'YYYYMMDD') "
-                "                       END + (review_interval || ' days')::interval, "
-                "                       'YYYYMMDD' "
-                "                   ), "
+                "next_review_date = CASE "
+                "                       WHEN T1.result = 1 THEN  "
+                "                           to_char( "
+                "                               CASE "
+                "                                   WHEN next_review_date = %s THEN %s::date "
+                "                                   ELSE to_date(next_review_date, 'YYYYMMDD') "
+                "                               END + (review_interval || ' days')::interval, "
+                "                               'YYYYMMDD' "
+                "                           ) "
+                "                       ELSE "
+                "                           CASE "
+                "                               WHEN next_review_date = %s THEN %s "
+                "                               ELSE next_review_date "
+                "                           END "
+                "                   END, "
                 "update_date = %s "
-                "from T_History "
-                "where T_History.session_id = %s and T_History.start_id = %s and T_History.row_num = %s "
-                "and M_Syntax.user_id = %s and T_History.syntax_id = M_Syntax.syntax_id",
+                "from T_History T1 "
+                "where T1.session_id = %s and T1.start_id = %s and T1.row_num = %s "
+                "and M1.user_id = %s and T1.syntax_id = M1.syntax_id",
                 (initial_yyyymmdd,
                  datetime.now().strftime("%Y-%m-%d"),
+                 initial_yyyymmdd,
+                 datetime.now().strftime("%Y%m%d"),
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  sessionId,
                  startId,
@@ -954,11 +1016,11 @@ def get_false_syntax_id_list(sessionId: str, sessionData: sessionData):
             cursor = conn.cursor()
         
             cursor.execute(
-                "select M_Syntax.syntax_id, M_Syntax.syntax, T_History.japanese_sentence, T_History.answer "
-                "from T_History "
-                "inner join M_Syntax "
-                "on M_Syntax.user_id = %s and T_History.syntax_id = M_Syntax.syntax_id "
-                "where T_History.session_id = %s and T_History.start_id = %s and T_History.result = 0",
+                "select M1.syntax_id, M1.syntax, T1.japanese_sentence, T1.answer "
+                "from T_History T1 "
+                "inner join M_Syntax M1 "
+                "on M1.user_id = %s and T1.syntax_id = M1.syntax_id "
+                "where T1.session_id = %s and T1.start_id = %s and T1.result = 0",
                 (sessionData.user_id,
                  sessionId,
                  sessionData.current_start_id)
@@ -1016,11 +1078,11 @@ def get_wrong_answers(sessionId: str, sessionData: sessionData):
             cursor = conn.cursor()
         
             cursor.execute(
-                "select M_Syntax.syntax_id, M_Syntax.syntax, T_History.row_num, T_History.japanese_sentence, T_History.answer, T_History.correct_answer, T_History.explanation "
-                "from T_History "
-                "inner join M_Syntax "
-                "on M_Syntax.user_id = %s and T_History.syntax_id = M_Syntax.syntax_id "
-                "where T_History.session_id = %s and T_History.start_id = %s and T_History.result = 0",
+                "select M1.syntax_id, M1.syntax, T1.row_num, T1.japanese_sentence, T1.answer, T1.correct_answer, T1.explanation "
+                "from T_History T1 "
+                "inner join M_Syntax M1 "
+                "on M1.user_id = %s and T1.syntax_id = M1.syntax_id "
+                "where T1.session_id = %s and T1.start_id = %s and T1.result = 0",
                 (sessionData.user_id,
                  sessionId,
                  sessionData.current_start_id)

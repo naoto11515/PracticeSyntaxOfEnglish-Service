@@ -1,48 +1,55 @@
-// login button click event handler
-const mode = document.getElementById("mode");
-const userName = document.getElementById("userName");
-const password = document.getElementById("password");
-const loginButton = document.getElementById("loginButton");
+// [common] edit_User screen element
+const editUserForm = document.getElementById("editUserForm");
 const submitButton = document.getElementById("submitButton");
+
+// [specific] edit_User screen element
 const userNameDisplay = document.getElementById("user-name");
 const conditionMessage = document.getElementById("condition-message");
 
-submitButton.addEventListener("click", async () => {
+submitButton.addEventListener("click", () => {
+  editUserForm.classList.add("was-validated");
+});
 
+editUserForm.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+  
+  if (!editUserForm.checkValidity()) {
+    return; 
+  }
+  
   document.body.setAttribute('inert', 'true');
+  const formData = new FormData(editUserForm);
 
-  const formData = new FormData();
-
-  if (mode.value == "create"){
+  if (formData.get("mode") == "create"){
     post_name = "/create_user"
-    formData.append("userName", userName.value);
-    formData.append("password", password.value);
 
-  } else if (mode.value == "update") {
+  } else if (formData.get("mode") == "update") {
     post_name = "/update_user"
-    formData.append("userName", userName.value);
-    formData.append("password", password.value);
 
   } else {
     post_name = "/delete_user"
-    formData.append("userName", userName.value);
   }
 
-  const response = await fetch(post_name, {
-    method: "POST",
-    body: formData
-  });
+  try{
+    const response = await fetch(post_name, {
+      method: "POST",
+      body: formData
+    });
 
-  const result = await response.json();
-  
-  if (!result.success) {
-      alert(result.message);
-  } else {
-      userNameDisplay.textContent = result.userNamedisplay;
-      conditionMessage.textContent = result.condition_message;
+    const result = await response.json();
+    
+    if (!result.success) {
+        alert(result.message);
+    } else {
+        userNameDisplay.textContent = result.userNamedisplay;
+        conditionMessage.textContent = result.condition_message;
 
-      modal.style.display = "block";
+        modal.style.display = "block";
+    }
+  } catch(error){
+    alert("通信エラーが発生しました。");
+  } finally{
+    document.body.removeAttribute('inert');
   }
-
-  document.body.removeAttribute('inert');
 });

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Practice Syntax of English Service</title>
   <link rel="stylesheet" href="/static/style.css?v=2">
-  <script src="/static/start.js" defer></script>
+  <script src="/static/start.js?v=2" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -13,15 +13,15 @@
             <h1>Practice Syntax of English Service</h1>
         </div>
         <div class="content">
-            <div class="settings">
-                <h3>settings</h3>
+            <form class="start-form" id="startForm" novalidate>
+                <h2>start page</h2>
                 <div class="form-group">
                     <label for="numberquestions">Number of questions</label>
-                    <input id="numberquestions" type="number" placeholder="数字を入力">
+                    <input id="numberquestions" name="numberquestions" type="number" placeholder="数字を入力">
                 </div>
                 <div class="form-group">
                     <label for="levelCategorySelect">Level category</label>
-                    <select id="levelCategorySelect">
+                    <select id="levelCategorySelect" name="levelCategorySelect">
                         <option value="0">-- カテゴリを選択してください --</option>
                         <option value="1">CEFR</option>
                         <option value="2">IELTS</option>
@@ -30,31 +30,30 @@
                 </div>
                 <div class="form-group">
                     <label for="levelSelect">Level</label>
-                    <select id="levelSelect">
+                    <select id="levelSelect" name="levelSelect">
                         <option value="0">-- レベルを選択してください --</option>
                     </select>
                 </div>
-            </div>
-            <div class="button-area">
-                <button id="startButton">
-                    Start
-                </button><br>
-                <button onclick="location.href='/edit_syntax'">
-                    edit Syntax
-                </button>
-                <button onclick="location.href='/list_syntax'">
-                    List Syntax
-                </button><br>
-                <button onclick="location.href='/edit_user?mode=update'">
-                    edit user
-                </button>
-                <button onclick="location.href='/edit_user?mode=delete'">
-                    delete user
-                </button><br>
-                <button onclick="location.href='/'">
-                    log out
-                </button>
-            </div>
+                <div class="button-area">
+                    <button id="submitButton" type="submit">
+                        start
+                    </button>
+                </div>
+                <div class="button-area">
+                    <button type="button" onclick="location.href='/list_syntax'">
+                        List Syntax
+                    </button>
+                    <button type="button" onclick="location.href='/edit_syntax'">
+                        edit Syntax
+                    </button>
+                </div>
+                <div class="button-area">
+                    <a href='/edit_user?mode=update'>edit user</a>
+                    <a href='/edit_user?mode=delete'>delete user</a>
+                    <a href='/'>log out</a>
+                </div>
+            </form>
+
         </div>
         <div class="footer">
             <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>

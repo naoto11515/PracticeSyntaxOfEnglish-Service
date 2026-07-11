@@ -1,8 +1,9 @@
-// start button click event handler
-const numberquestions = document.getElementById("numberquestions");
+// [common] start screen element
+const startForm = document.getElementById("startForm");
+const submitButton = document.getElementById("submitButton");
+
+// [specific] start screen element
 const levelCategorySelect = document.getElementById("levelCategorySelect");
-const levelSelect = document.getElementById("levelSelect");
-const startButton = document.getElementById("startButton");
 
 // level master data
 const levelDataInitial = {value: "0", text: "-- レベルを選択してください --"};
@@ -54,27 +55,36 @@ levelCategorySelect.addEventListener("change", () => {
   });
 });
 
-startButton.addEventListener("click", async () => {
+submitButton.addEventListener("click", () => {
+  startForm.classList.add("was-validated");
+});
 
-  document.body.setAttribute('inert', 'true');
+startForm.addEventListener("submit", async (event) => {
+  
+  event.preventDefault();
 
-  const formData = new FormData();
-  formData.append("numberquestions", numberquestions.value);
-  formData.append("levelCategory", levelCategorySelect.value);
-  formData.append("level", levelSelect.value);
-
-  const response = await fetch("/start", {
-    method: "POST",
-    body: formData
-  });
-
-  const result = await response.json();
-
-  if (!result.success) {
-      alert(result.message);
-  } else {
-      window.location.href = result.next;
+  if (!startForm.checkValidity()) {
+    return; 
   }
 
-  document.body.removeAttribute('inert');
+  document.body.setAttribute('inert', 'true');
+  const formData = new FormData(startForm);
+
+  try {
+    const response = await fetch("/start", {
+      method: "POST",
+      body: formData
+    });
+    const result = await response.json();
+
+    if (!result.success) {
+        alert(result.message);
+    } else {
+        window.location.href = result.next;
+    }
+  } catch (error) {
+    alert("通信エラーが発生しました。");
+  } finally {
+    document.body.removeAttribute('inert');
+  }
 });

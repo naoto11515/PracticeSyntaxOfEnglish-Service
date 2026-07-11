@@ -13,41 +13,40 @@
             <h1>Practice Syntax of English Service</h1>
         </div>
         <div class="content">
-            <div class="regist-form">
+            <form class="edit-syntax-form" id="editSyntaxForm" novalidate>
                 <h3>Edit syntax</h3>
                 <div class="form-group">
                     <label for="mode">Transaction type</label>
-                    <input id="mode" type="text" value="{{ mode }}" readonly></input>
-                </div>
+                    <input id="mode" name="mode" type="text" value="{{ mode }}" readonly></input>
                 </div>
                 <div class="form-group">
                     <label for="syntaxId">syntax ID</label>
-                    <input id="syntaxId" type="text" value="{{ syntax_id }}" placeholder="シンタックスIDを入力" disabled>
+                    <input id="syntaxId" name="syntaxId" type="text" value="{{ syntax_id }}" placeholder="シンタックスIDを入力" disabled>
                 </div>
                 <div class="form-group">
                     <label for="automaticNumbering">Automatic numbering</label>
-                    <input id="automaticNumbering", type="checkbox" checked>
+                    <input id="automaticNumbering", name="automaticNumbering" type="checkbox" checked>
                 </div>
                 <div class="form-group">
                     <label for="syntax">syntax</label>
-                    <input id="syntax" type="text" value="{{ syntax }}" placeholder="シンタックスを入力">
+                    <input id="syntax" name="syntax" type="text" value="{{ syntax }}" placeholder="シンタックスを入力" required>
                 </div>
                 <div class="form-group">
                     <label for="meaning">meaning</label>
-                    <input id="meaning" type="text" value="{{ meaning }}" placeholder="意味を入力">
+                    <input id="meaning" name="meaning" type="text" value="{{ meaning }}" placeholder="意味を入力" required>
                 </div>
                 <div class="button-area">
-                    <button id="submitButton">
+                    <button id="submitButton" type="submit">
                         submit
                     </button>
 
                     {% if mode == "create" %}
-                        <button onclick="location.href='/start'">back to start</button>
+                        <button type="button" onclick="location.href='/start'">back to start</button>
                     {% else %}
-                        <button onclick="location.href='/list_syntax'">back to list</button>
+                        <button type="button" onclick="location.href='/list_syntax'">back to list</button>
                     {% endif %}
                 </div>
-            </div>
+            </form>
         </div>
         <div id="modal">
             <div id="modal-content">

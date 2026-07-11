@@ -38,6 +38,12 @@ body {
   flex: 1;
 }
 
+.content-header {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 40px 0;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -64,7 +70,7 @@ body {
 }
 
 .button-area button {
-    width: auto;
+    width: 150px;
 }
 
 .table-wrap {
@@ -111,19 +117,10 @@ body {
   text-decoration: underline;
 }
 
-.settings {
-  margin-bottom: 24px;
-}
-
-.settings h3,
-.wrong-answers h2 {
+.content h2 {
   margin-top: 0;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 10px;
-}
-
-p {
-  line-height: 1.7;
 }
 
 input,
@@ -144,6 +141,17 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+.was-validated input[required]:invalid {
+  border-color: #ff4d4f;
+  background-color: #fff2f0;
+  outline: none;
+}
+
+.was-validated input[required]:valid {
+  border-color: #ccc;
+  background-color: #fff;
+}
+
 button {
   padding: 12px 24px;
   border: none;
@@ -157,6 +165,21 @@ button {
 
 button:hover {
   background: #1d4ed8;
+}
+
+.hint-area {
+  display: flex;
+  align-items: right;
+  gap: 10px;
+}
+
+.hint-area p {
+  color: #64748b;
+  font-size: 12px;
+}
+
+#hint {
+  color: white;
 }
 
 #syntaxId:disabled {
@@ -177,16 +200,6 @@ button:hover {
   padding: 16px;
   border-radius: 8px;
   font-size: 18px;
-}
-
-#sessionIdText,
-#startIdText,
-#rowNumberText,
-#numberquestions,
-#levelCategory,
-#level {
-  color: #64748b;
-  font-size: 14px;
 }
 
 /* modal */

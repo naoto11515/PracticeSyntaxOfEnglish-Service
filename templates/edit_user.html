@@ -13,45 +13,46 @@
             <h1>Practice Syntax of English Service</h1>
         </div>
         <div class="content">
-            <h3>Edit user</h3>
-            <div class="form-group">
-                <label for="mode">Transaction type</label>
-                <input id="mode" type="text" value="{{ mode }}" readonly></input>
-            </div>
-            <div class="regist-form">
-                <h3>Regist user</h3>
-                <div class="form-group">
-                    <label for="userName">user name</label>
-                    <input id="userName" type="text" value="{{ userName }}"placeholder="ユーザー名を入力">
+            <form class="edit-user-form" id="editUserForm" novalidate>
+                <h2>Edit user</h2>
+                <div class="regist-form">
+                    <div class="form-group">
+                        <label for="mode">Transaction type</label>
+                        <input id="mode" name="mode" type="text" value="{{ mode }}" readonly></input>
+                    </div>
+                    <div class="form-group">
+                        <label for="userName">user name</label>
+                        <input id="userName" name="userName" type="text" value="{{ userName }}"placeholder="ユーザー名を入力" required>
+                    </div>
+                    {% if mode != "delete" %}
+                        <div class="form-group">
+                            <label for="password">password</label>
+                            <input id="password" name="password" type="password" placeholder="パスワードを入力" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">confirm password</label>
+                            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="パスワードを再入力" required>
+                        </div>
+                    {% endif %}
                 </div>
-                {% if mode != "delete" %}
-                    <div class="form-group">
-                        <label for="password">password</label>
-                        <input id="password" type="password" placeholder="パスワードを入力">
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">confirm password</label>
-                        <input id="confirmPassword" type="password" placeholder="パスワードを再入力">
-                    </div>
-                {% endif %}
-            </div>
-            <div class="button-area">
-                <button id="submitButton">
-                    submit
-                </button>
-                {% if model == "create" %}
-                    <button onclick="location.href='/'">back to login</button>
-                {% else %}
-                    <button onclick="location.href='/start'">back to start</button>
-                {% endif %}
-            </div>
+                <div class="button-area">
+                    <button id="submitButton" type="submit">
+                        submit
+                    </button>
+                    {% if model == "create" %}
+                        <button type="button" onclick="location.href='/'">back to login</button>
+                    {% else %}
+                        <button type="button" onclick="location.href='/start'">back to start</button>
+                    {% endif %}
+                </div>
+            </form>
         </div>
         <div id="modal">
             <div id="modal-content">
                 <p id="user-name"></p>
                 <p id="condition-message"></p>
                 <div class=""button-area">
-                    <button id="next-button" onclick="location.href='/'">back to Login</button>
+                    <button type="button" onclick="location.href='/'">back to Login</button>
                 </div>
             </div>
         </div>

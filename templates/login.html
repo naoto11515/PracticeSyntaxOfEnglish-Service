@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Practice Syntax of English Service</title>
-  <link rel="stylesheet" href="/static/style.css?v=3">
-  <script src="/static/login.js" defer></script>
+  <link rel="stylesheet" href="/static/style.css?v=5">
+  <script src="/static/login.js?v=3" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -13,25 +13,27 @@
             <h1>Practice Syntax of English Service</h1>
         </div>
         <div class="content">
-            <div class="login-form">
-                <h3>Sign In</h3>
-                <div class="form-group">
-                    <label for="username">user name</label>
-                    <input id="username" type="text" placeholder="ユーザー名を入力">
+            <form class="login-form" id="loginForm" novalidate>
+                <div class="login-form">
+                    <h3>Sign In</h3>
+                    <div class="form-group">
+                        <label for="username">user name</label>
+                        <input id="username" name="username" type="text" placeholder="ユーザー名を入力" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">password</label>
+                        <input id="password" name="password" type="password" placeholder="パスワードを入力" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="password">password</label>
-                    <input id="password" type="password" placeholder="パスワードを入力">
+                <div class="button-area">
+                    <button id="submitButton" type="submit">
+                        Sign In
+                    </button>
+                    <button type="button" onclick="location.href='/edit_user'">
+                        Sign Up
+                    </button>
                 </div>
-            </div>
-            <div class="button-area">
-                <button id="loginButton">
-                    Sign In
-                </button>
-                <button onclick="location.href='/edit_user'">
-                    Sign Up
-                </button>
-            </div>
+            </form>
         </div>
         <div class="footer">
             <p>&copy; 2026 Practice Syntax of English Service. All rights reserved.</p>

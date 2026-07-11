@@ -1,53 +1,57 @@
-// start button click event handler
-const sessionId = document.getElementById("sessionId");
-const startId = document.getElementById("startId");
-const numberquestions = document.getElementById("numberquestions");
-const rowNumber = document.getElementById("rowNumber");
-const levelCategory = document.getElementById("levelCategory");
-const level = document.getElementById("level");
-const japaneseSentence = document.getElementById("japaneseSentence");
-const answerInput = document.getElementById("answerInput");
-const answerButton = document.getElementById("answerButton");
+// [common] question screen element
+const questionForm = document.getElementById("questionForm");
+const submitButton = document.getElementById("submitButton");
 
+// [specific] question screen element
 const modal = document.getElementById("modal");
 const resultMessage = document.getElementById("result-message");
 const correctAnswer = document.getElementById("correct-answer");
 const explanationMessage = document.getElementById("explanation-message");
 const nextButton = document.getElementById("next-button");
+const hint = document.getElementById("hint");
 
-answerButton.addEventListener("click", async () => {
+submitButton.addEventListener("click", () => {
+  questionForm.classList.add("was-validated");
+});
+
+questionForm.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+  
+  if (!questionForm.checkValidity()) {
+    return; 
+  }
   
   document.body.setAttribute('inert', 'true');
-  
-  const formData = new FormData();
-  formData.append("sessionId", sessionId.value);
-  formData.append("startId", startId.value);
-  formData.append("rowNumber", rowNumber.value);
-  formData.append("answer", answerInput.value);
+  const formData = new FormData(questionForm);
 
-  const response = await fetch("/answer", {
-    method: "POST",
-    body: formData
-  });
+  try{
+    const response = await fetch("/answer", {
+      method: "POST",
+      body: formData
+    });
 
-  const result = await response.json();
+    const result = await response.json();
 
-  nextButton.dataset.finished = result.finished;
+    nextButton.dataset.finished = result.finished;
 
-  if (result.finished) {
-    nextButton.textContent = "結果を見る";
-  } else {
-    nextButton.textContent = "次へ進む";
+    if (result.finished) {
+      nextButton.textContent = "結果を見る";
+    } else {
+      nextButton.textContent = "次へ進む";
+    }
+    // Display the result message
+    resultMessage.textContent = result.result;
+    correctAnswer.textContent = result.correct_answer;
+    explanationMessage.textContent = result.explanation;
+
+    // Show the modal
+    modal.style.display = "block";
+  } catch(error){
+    alert("通信エラーが発生しました。");
+  } finally{
+    document.body.removeAttribute('inert');
   }
-  // Display the result message
-  resultMessage.textContent = result.result;
-  correctAnswer.textContent = result.correct_answer;
-  explanationMessage.textContent = result.explanation;
-
-  // Show the modal
-  modal.style.display = "block";
-
-  document.body.removeAttribute('inert');
 });
 
 function goToNext() {
@@ -57,3 +61,11 @@ function goToNext() {
     window.location.href = "/question";
   }
 }
+
+function toggeleText() {
+  if (hint.style.color === "white") {
+    hint.style.color = "#64748b"
+  } else {
+    hint.style.color = "white"
+  }
+  }

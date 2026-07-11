@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Practice Syntax of English Service</title>
   <link rel="stylesheet" href="/static/style.css?v=2">
-  <script src="/static/question.js" defer></script>
+  <script src="/static/question.js?v=1" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -13,27 +13,35 @@
             <h1>Practice Syntax of English Service</h1>
         </div>
         <div class="content">
-            <h3>Question page</h3>
-            <p id="sessionIdText">Session ID: {{ sessionId }}</p>
-            <p id="startIdText">Start ID: {{ startId }}</p>
-            <p id="rowNumberText">Row number: {{ rowNumber }}</p>
-
-            <input type="hidden" id="sessionId" value="{{ sessionId }}">
-            <input type="hidden" id="startId" value="{{ startId }}">
-            <input type="hidden" id="rowNumber" value="{{ rowNumber }}">
-            <p id="numberquestions">Number of questions: {{ numberquestions }}</p>
-            <p id="levelCategory">Level category: {{ levelCategory }}</p>
-            <p id="level">Level: {{ level }}</p>
-            <p id="japaneseSentence">Japanese sentence: {{ japaneseSentence }}</p>
-            <div class="form-group">
-                <label for="answerInput">answer</label>
-                <input type="text" id="answerInput" /></p>
-            </div>
-            <div class="button-area">
-                <button id="answerButton">
-                    Answer
-                </button>
-            </div>
+            <form class="question-form" id="questionForm" novalidate>
+                <h2>Question page</h2>
+                <div class="content-header">
+                    <p id="startIdText">Start ID: {{ startId }}</p>
+                    <p id="levelCategory">Level category: {{ levelCategory }}</p>
+                    <p id="level">Level: {{ level }}</p>
+                    <p id="numberquestions">Question: {{ rowNumber }} of {{ numberquestions }}</p>
+                    <input type="hidden" id="sessionId" name="sessionId" value="{{ sessionId }}">
+                    <input type="hidden" id="startId" name="startId" value="{{ startId }}">
+                    <input type="hidden" id="rowNumber" name="rowNumber" value="{{ rowNumber }}">
+                </div>
+                <div class="form-group">
+                    <label for="japaneseSentence">Japanese sentence</label>
+                    <p id="japaneseSentence"> {{ japaneseSentence }}</p>
+                </div>
+                <div class="form-group">
+                    <label for="answer">answer</label>
+                    <input id="answer" name="answer" type="text" required>
+                </div>
+                <div class="hint-area">
+                    <button id = "displayButton" type="button" onclick="toggeleText()">display hint</button>
+                    <p id="hint">Syntax: {{ syntax }}</p>
+                </div>
+                <div class="button-area">
+                    <button id="submitButton" type="submit">
+                        submit
+                    </button>
+                </div>
+            </form>
         </div>
         <div id="modal">
             <div id="modal-content">
@@ -41,7 +49,7 @@
                 <p id="correct-answer"></p>
                 <p id="explanation-message"></p>
                 <div class="button-area">
-                    <button id="next-button" onclick="goToNext()">次へ進む</button>
+                    <button id="next-button" type="button" onclick="goToNext()">次へ進む</button>
                 </div>
             </div>
         </div>
