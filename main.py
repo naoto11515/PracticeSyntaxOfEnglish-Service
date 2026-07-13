@@ -874,9 +874,10 @@ def question_page(request: Request):
             cursor.execute(
                 "select syntax_id, japanese_sentence, row_num "
                 "from T_History "
-                "where session_id = %s and answer is null "
+                "where session_id = %s and start_id = %s answer is null "
                 "order by row_num limit 1",
-                (sessionId,)
+                (sessionId,
+                current_start_id)
             )
             question_data = cursor.fetchone()
 
