@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Practice Syntax of English Service</title>
-  <link rel="stylesheet" href="/static/style.css?v=2">
-  <script src="/static/start.js?v=2" defer></script>
+  <link rel="stylesheet" href="/static/style.css?v=3">
+  <script src="/static/start.js?v=4" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -15,9 +15,20 @@
         <div class="content">
             <form class="start-form" id="startForm" novalidate>
                 <h2>start page</h2>
+                {% if pending %}
+                <div class="pending-notice" id="pendingArea">
+                    <p class="pending-notice-title">Incomplete session found</p>
+                    <p class="pending-notice-detail">Start date: {{ pending.start_date }} ・ {{ pending.completed_count }} of {{ pending.total_count }} questions answered</p>
+                    <div class="button-area">
+                        <button id="continueButton" type="button" data-session-id="{{ pending.session_id }}" data-start-id="{{ pending.start_id }}">
+                            continue
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
                 <div class="form-group">
                     <label for="numberquestions">Number of questions</label>
-                    <input id="numberquestions" name="numberquestions" type="number" placeholder="数字を入力">
+                    <input id="numberquestions" name="numberquestions" type="number" placeholder="数字を入力" required>
                 </div>
                 <div class="form-group">
                     <label for="levelCategorySelect">Level category</label>

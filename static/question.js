@@ -63,9 +63,5 @@ function goToNext() {
 }
 
 function toggeleText() {
-  if (hint.style.color === "white") {
-    hint.style.color = "#64748b"
-  } else {
-    hint.style.color = "white"
-  }
-  }
+  hint.classList.toggle("is-visible");
+}

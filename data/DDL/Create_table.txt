@@ -13,6 +13,9 @@ CREATE TABLE T_Start (
 	number_questions INTEGER NOT NULL,
 	level_category TEXT NOT NULL,
 	level TEXT NOT NULL,
+	complete_flg INTEGER NOT NULL DEFAULT 0,
+	previous_session_id TEXT,
+	previous_start_id INTEGER,
 	update_date TEXT NOT NULL,
 	create_date TEXT NOT NULL,
 	PRIMARY KEY(session_id, start_id)
@@ -46,6 +49,7 @@ CREATE TABLE T_History (
 	result integer,
 	correct_answer TEXT,
 	explanation TEXT,
+	manual_fix_flg INTEGER NOT NULL DEFAULT 0,
 	update_date TEXT NOT NULL,
 	create_date TEXT NOT NULL,
 	PRIMARY KEY(session_id, start_id, row_num)

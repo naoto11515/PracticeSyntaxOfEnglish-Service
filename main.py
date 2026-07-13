@@ -499,7 +499,7 @@ def login(request: Request,
                 "(session_id, user_id, current_start_id, update_date, create_date) "
                 "values "
                 "(%s, %s, %s, %s, %s)",
-                (sessionId, 
+                (sessionId,
                  user_data[0],
                  0,
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -524,10 +524,16 @@ def login(request: Request,
 
 @app.get("/start", response_class=HTMLResponse)
 def start_page(request: Request):
+
+    sessionId = request.cookies.get("session_id")
+    userId = get_session_data(sessionId).user_id
+
     return templates.TemplateResponse(
         request=request,
         name="start.html",
-        context={}
+        context={
+            "pending": get_pending_transaction(userId)
+        }
     )
 
 @app.post("/start")
@@ -625,21 +631,36 @@ def start(request: Request,
             "message": "練習対象のシンタックス数( " + str(count_syntax_data[0]) + " )が指定した問題数分ありません。新しいシンタックスを追加する、もしくは問題数を減らしてください。"
     })
 
+    pending = get_pending_transaction(sessionData.user_id)
+
     conn = db_connect()
     try:
         with conn:
             cursor = conn.cursor()
-    
+
+            if pending:
+                cursor.execute(
+                    "update T_Start "
+                    "set complete_flg = 1, update_date = %s "
+                    "where session_id = %s and start_id = %s",
+                    (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     pending["session_id"],
+                     pending["start_id"])
+                )
+
             cursor.execute("Insert into T_Start "
-                           "(session_id, start_id, start_date, number_questions, level_category, level, update_date, create_date) "
+                           "(session_id, start_id, start_date, number_questions, level_category, level, complete_flg, previous_session_id, previous_start_id, update_date, create_date) "
                            "values "
-                           "(%s, %s, %s, %s, %s, %s, %s, %s)",
+                           "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                            (sessionId,
                             start_id,
                             datetime.now().strftime("%Y%m%d"),
                             numberquestions,
                             levelCategorySelect,
                             levelSelect,
+                            0,
+                            None,
+                            None,
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
@@ -730,10 +751,112 @@ def start(request: Request,
 
     response = JSONResponse(
         { "success": True,
-         "next": "/question" 
+         "next": "/question"
         })
 
     return response
+
+@app.post("/resume_transaction")
+def resume_transaction(request: Request,
+                        sessionId: str = Form(...),
+                        startId: int = Form(...)):
+
+    currentSessionId = request.cookies.get("session_id")
+
+    conn = db_connect()
+    try:
+        with conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "select start_date, number_questions, level_category, level "
+                "from T_Start "
+                "where session_id = %s and start_id = %s",
+                (sessionId, startId)
+            )
+            old_start = cursor.fetchone()
+
+            cursor.execute(
+                "select row_num, syntax_id, japanese_sentence, answer, result, correct_answer, explanation, manual_fix_flg "
+                "from T_History "
+                "where session_id = %s and start_id = %s "
+                "order by row_num",
+                (sessionId, startId)
+            )
+            old_history = cursor.fetchall()
+
+            cursor.execute(
+                "select MAX(start_id) "
+                "from T_Start "
+                "where session_id = %s",
+                (currentSessionId,)
+            )
+            max_start_id = cursor.fetchone()
+
+            newStartId = 1 if max_start_id[0] is None else max_start_id[0] + 1
+
+            cursor.execute(
+                "Insert into T_Start "
+                "(session_id, start_id, start_date, number_questions, level_category, level, complete_flg, previous_session_id, previous_start_id, update_date, create_date) "
+                "values "
+                "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (currentSessionId,
+                 newStartId,
+                 old_start[0],
+                 old_start[1],
+                 old_start[2],
+                 old_start[3],
+                 0,
+                 sessionId,
+                 startId,
+                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            )
+
+            for row in old_history:
+                cursor.execute(
+                    "Insert into T_History "
+                    "(session_id, start_id, row_num, syntax_id, japanese_sentence, answer, result, correct_answer, explanation, manual_fix_flg, update_date, create_date) "
+                    "values "
+                    "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    (currentSessionId,
+                     newStartId,
+                     row[0],
+                     row[1],
+                     row[2],
+                     row[3],
+                     row[4],
+                     row[5],
+                     row[6],
+                     row[7],
+                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                )
+
+            cursor.execute(
+                "update T_Start "
+                "set complete_flg = 1, update_date = %s "
+                "where session_id = %s and start_id = %s",
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 sessionId,
+                 startId)
+            )
+
+            cursor.execute(
+                "update T_Session "
+                "set current_start_id = %s, update_date = %s "
+                "where session_id = %s",
+                (newStartId,
+                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 currentSessionId)
+            )
+    finally:
+        conn.close()
+
+    return JSONResponse({
+        "success": True,
+        "next": "/question"
+    })
 
 @app.get("/question")
 def question_page(request: Request):
@@ -850,12 +973,12 @@ def answer(request: Request,
                 "true_number = CASE WHEN T1.result = 1 THEN true_number + 1 ELSE true_number END, "
                 "false_number = CASE WHEN T1.result = 0 THEN false_number + 1 ELSE false_number END, "
                 "review_interval = CASE "
-                "                      WHEN review_interval = 0 THEN 1 "
-                "                      WHEN review_interval = 16 THEN review_interval "
+                "                      WHEN T1.result = 0 THEN review_interval "
                 "                      ELSE "
                 "                          CASE "
-                "                              WHEN T1.result = 1 THEN review_interval * 2 "
-                "                              ELSE review_interval "
+                "                              WHEN review_interval = 0 THEN 1 "
+                "                              WHEN review_interval = 16 THEN review_interval "
+                "                              ELSE review_interval * 2 "
                 "                          END "
                 "                  END, "
                 "update_date = %s "
@@ -910,6 +1033,23 @@ def answer(request: Request,
     if syntax_data[2] == rowNumber:
         finished = True
 
+    if finished:
+        conn = db_connect()
+        try:
+            with conn:
+                cursor = conn.cursor()
+
+                cursor.execute(
+                    "update T_Start "
+                    "set complete_flg = 1, update_date = %s "
+                    "where session_id = %s and start_id = %s",
+                    (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     sessionId,
+                     startId)
+                )
+        finally:
+            conn.close()
+
     return JSONResponse({
         "success": True,
         "result": "correct" if data.result == 1 else "incorrect",
@@ -917,6 +1057,82 @@ def answer(request: Request,
         "explanation": data.explanation,
         "finished": finished
     })
+
+@app.post("/fix_result")
+def fix_result(request: Request,
+                startId: str = Form(...),
+                rowNumber: int = Form(...)):
+
+    sessionId = request.cookies.get("session_id")
+    userId = get_session_data(sessionId).user_id
+
+    conn = db_connect()
+    try:
+        with conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "update T_History "
+                "set result = 1, manual_fix_flg = 1, update_date = %s "
+                "where session_id = %s and start_id = %s and row_num = %s and result = 0 "
+                "returning syntax_id",
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 sessionId,
+                 startId,
+                 rowNumber)
+            )
+            fixed_row = cursor.fetchone()
+
+            if fixed_row:
+                syntaxId = fixed_row[0]
+
+                cursor.execute(
+                    "update M_Syntax "
+                    "set true_number = true_number + 1, "
+                    "false_number = false_number - 1, "
+                    "true_rate = ROUND((CAST(true_number + 1 AS NUMERIC) / CAST(study_number AS NUMERIC)) * 100, 1), "
+                    "update_date = %s "
+                    "where user_id = %s and syntax_id = %s",
+                    (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     userId,
+                     syntaxId)
+                )
+
+                cursor.execute(
+                    "update M_Syntax "
+                    "set review_interval = CASE "
+                    "                          WHEN review_interval = 0 THEN 1 "
+                    "                          WHEN review_interval = 16 THEN review_interval "
+                    "                          ELSE review_interval * 2 "
+                    "                       END, "
+                    "update_date = %s "
+                    "where user_id = %s and syntax_id = %s",
+                    (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     userId,
+                     syntaxId)
+                )
+
+                cursor.execute(
+                    "update M_Syntax "
+                    "set next_review_date = to_char( "
+                    "                            CASE "
+                    "                                WHEN next_review_date = %s THEN %s::date "
+                    "                                ELSE to_date(next_review_date, 'YYYYMMDD') "
+                    "                            END + (review_interval || ' days')::interval, "
+                    "                            'YYYYMMDD' "
+                    "                        ), "
+                    "update_date = %s "
+                    "where user_id = %s and syntax_id = %s",
+                    (initial_yyyymmdd,
+                     datetime.now().strftime("%Y-%m-%d"),
+                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     userId,
+                     syntaxId)
+                )
+    finally:
+        conn.close()
+
+    return JSONResponse({"success": True})
 
 @app.get("/result")
 def result_page(request: Request):
@@ -947,6 +1163,7 @@ def result_page(request: Request):
         "result.html",
         {
             "sessionId": sessionId,
+            "startId": sessionData.current_start_id,
             "true_count": result_data[0],
             "false_count": result_data[1],
             "true_rate": round((result_data[0] / (result_data[0] + result_data[1])) * 100, 1) if (result_data[0] + result_data[1]) > 0 else 0,
@@ -1104,6 +1321,38 @@ def get_wrong_answers(sessionId: str, sessionData: sessionData):
         })
 
     return wrong_answers
+
+def get_pending_transaction(userId: int):
+    conn = db_connect()
+    try:
+        with conn:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "select s.session_id, s.current_start_id, ts.start_date, ts.number_questions, "
+                "sum(case when th.answer is not null then 1 else 0 end) as completed_count "
+                "from T_Session s "
+                "inner join T_Start ts on ts.session_id = s.session_id and ts.start_id = s.current_start_id "
+                "inner join T_History th on th.session_id = ts.session_id and th.start_id = ts.start_id "
+                "where s.user_id = %s and ts.complete_flg = 0 and s.current_start_id <> 0 "
+                "group by s.session_id, s.current_start_id, ts.start_date, ts.number_questions "
+                "limit 1",
+                (userId,)
+            )
+            pending_data = cursor.fetchone()
+    finally:
+        conn.close()
+
+    if not pending_data:
+        return None
+
+    return {
+        "session_id": pending_data[0],
+        "start_id": pending_data[1],
+        "start_date": pending_data[2],
+        "completed_count": pending_data[4],
+        "total_count": pending_data[3]
+    }
 
 def get_session_data(sessionId: str):
     conn = db_connect()

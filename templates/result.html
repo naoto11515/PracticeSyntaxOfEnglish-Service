@@ -43,6 +43,12 @@
 
                     <p><strong>解説:</strong></p>
                     <p>{{ item.explanation }}</p>
+
+                    <div class="button-area">
+                        <button type="button" class="fix-result-button" data-start-id="{{ startId }}" data-row-number="{{ item.row_num }}">
+                            change this correct
+                        </button>
+                    </div>
                     </article>
                 {% endfor %}
             </section>

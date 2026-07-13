@@ -4,11 +4,12 @@ const submitButton = document.getElementById("submitButton");
 
 // [specific] start screen element
 const levelCategorySelect = document.getElementById("levelCategorySelect");
+const continueButton = document.getElementById("continueButton");
 
 // level master data
 const levelDataInitial = {value: "0", text: "-- レベルを選択してください --"};
 const levelData = {
-  1: [{value: "1", text: "A1"}, 
+  1: [{value: "1", text: "A1"},
       {value: "2", text: "A2"},
       {value: "3", text: "B1"},
       {value: "4", text: "B2"},
@@ -31,13 +32,13 @@ const levelData = {
 
 levelCategorySelect.addEventListener("change", () => {
   const selectedCategory = levelCategorySelect.value;
-  
+
   // Clear previous options
-  levelSelect.innerHTML = "0"; 
+  levelSelect.innerHTML = "0";
 
   // Inithialize the level select with the default option
   const option = document.createElement("option");
-  option.value = levelDataInitial.value; 
+  option.value = levelDataInitial.value;
   option.textContent = levelDataInitial.text;
   levelSelect.appendChild(option);
 
@@ -60,11 +61,15 @@ submitButton.addEventListener("click", () => {
 });
 
 startForm.addEventListener("submit", async (event) => {
-  
+
   event.preventDefault();
 
   if (!startForm.checkValidity()) {
-    return; 
+    return;
+  }
+
+  if (continueButton && !confirm("進行中の前回のセッションは自動的に終了されます。新しいセッションを開始しますか？")) {
+    return;
   }
 
   document.body.setAttribute('inert', 'true');
@@ -88,3 +93,27 @@ startForm.addEventListener("submit", async (event) => {
     document.body.removeAttribute('inert');
   }
 });
+
+if (continueButton) {
+  continueButton.addEventListener("click", async () => {
+    document.body.setAttribute('inert', 'true');
+    const formData = new FormData();
+    formData.append("sessionId", continueButton.dataset.sessionId);
+    formData.append("startId", continueButton.dataset.startId);
+
+    try {
+      const response = await fetch("/resume_transaction", {
+        method: "POST",
+        body: formData
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        window.location.href = result.next;
+      }
+    } catch (error) {
+      alert("通信エラーが発生しました。");
+      document.body.removeAttribute('inert');
+    }
+  });
+}

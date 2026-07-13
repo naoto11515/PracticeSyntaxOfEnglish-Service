@@ -179,7 +179,11 @@ button:hover {
 }
 
 #hint {
-  color: white;
+  display: none;
+}
+
+#hint.is-visible {
+  display: block;
 }
 
 #syntaxId:disabled {
@@ -200,6 +204,41 @@ button:hover {
   padding: 16px;
   border-radius: 8px;
   font-size: 18px;
+}
+
+/* pending session notice */
+.pending-notice {
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+}
+
+.pending-notice-title {
+  margin: 0 0 6px 0;
+  font-weight: bold;
+  color: #92400e;
+  font-size: 16px;
+}
+
+.pending-notice-detail {
+  margin: 0;
+  color: #78350f;
+  font-size: 14px;
+}
+
+.pending-notice .button-area {
+  justify-content: flex-start;
+  margin-top: 14px;
+}
+
+#continueButton {
+  background: #f59e0b;
+}
+
+#continueButton:hover {
+  background: #d97706;
 }
 
 /* modal */
@@ -298,6 +337,11 @@ button:hover {
 
   button {
     width: 100%;
+  }
+
+  #displayButton {
+    width: auto;
+    flex: 0 0 auto;
   }
 
   .syntax-table {
