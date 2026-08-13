@@ -974,7 +974,7 @@ def answer(request: Request,
                 "true_number = CASE WHEN T1.result = 1 THEN true_number + 1 ELSE true_number END, "
                 "false_number = CASE WHEN T1.result = 0 THEN false_number + 1 ELSE false_number END, "
                 "review_interval = CASE "
-                "                      WHEN T1.result = 0 THEN review_interval "
+                "                      WHEN T1.result = 0 THEN 0 "
                 "                      ELSE "
                 "                          CASE "
                 "                              WHEN review_interval = 0 THEN 1 "
@@ -1000,27 +1000,17 @@ def answer(request: Request,
                 "next_review_date = CASE "
                 "                       WHEN T1.result = 1 THEN  "
                 "                           to_char( "
-                "                               CASE "
-                "                                   WHEN next_review_date = %s THEN %s::date "
-                "                                   ELSE to_date(next_review_date, 'YYYYMMDD') "
-                "                               END + (review_interval || ' days')::interval, "
+                "                               to_date(studied_date, 'YYYYMMDD') + (review_interval || ' days')::interval, "
                 "                               'YYYYMMDD' "
                 "                           ) "
                 "                       ELSE "
-                "                           CASE "
-                "                               WHEN next_review_date = %s THEN %s "
-                "                               ELSE next_review_date "
-                "                           END "
+                "                           studied_date "
                 "                   END, "
                 "update_date = %s "
                 "from T_History T1 "
                 "where T1.session_id = %s and T1.start_id = %s and T1.row_num = %s "
                 "and M1.user_id = %s and T1.syntax_id = M1.syntax_id",
-                (initial_yyyymmdd,
-                 datetime.now().strftime("%Y-%m-%d"),
-                 initial_yyyymmdd,
-                 datetime.now().strftime("%Y%m%d"),
-                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  sessionId,
                  startId,
                  rowNumber,
@@ -1238,7 +1228,8 @@ def get_false_syntax_id_list(sessionId: str, sessionData: sessionData):
                 "from T_History T1 "
                 "inner join M_Syntax M1 "
                 "on M1.user_id = %s and T1.syntax_id = M1.syntax_id "
-                "where T1.session_id = %s and T1.start_id = %s and T1.result = 0",
+                "where T1.session_id = %s and T1.start_id = %s and T1.result = 0 "
+                "order by T1.row_num",
                 (sessionData.user_id,
                  sessionId,
                  sessionData.current_start_id)
